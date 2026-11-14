@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -44,6 +45,8 @@ public class HydraHeadContainer {
 	private static final int FLAME_DAMAGE = 19;
 	private static final int BITE_DAMAGE = 48;
 	private static double FLAME_BREATH_TRACKING_SPEED = 0.04D;
+	private static final double FLAME_PARTICLE_AVERAGE_SPEED = 1.5D;
+	private static final double FLAME_PARTICLE_SPEED_DEVIATION = 0.5D;
 
 	@Nullable
 	private static final State NEXT_AUTOMATIC = null;
@@ -545,7 +548,7 @@ public class HydraHeadContainer {
 				double dz = look.z();
 
 				double spread = 5.0D + this.headEntity.level().getRandom().nextDouble() * 2.5D;
-				double velocity = 1.0D + this.headEntity.level().getRandom().nextDouble();
+				double velocity = FLAME_PARTICLE_AVERAGE_SPEED + (this.headEntity.level().getRandom().nextDouble() * 2.0D - 1.0D) * FLAME_PARTICLE_SPEED_DEVIATION;
 
 				// spread flame
 				dx += this.headEntity.level().getRandom().nextGaussian() * 0.0075D * spread;
@@ -691,14 +694,16 @@ public class HydraHeadContainer {
 						PacketDistributor.sendToPlayer((ServerPlayer) player, new MovePlayerPacket(-this.headEntity.getDirection().getStepX() * 0.5F, 0.15F, -this.headEntity.getDirection().getStepZ() * 0.5F));
 					}
 
+					DamageSource source = TFDamageTypes.getEntityDamageSource(living.level(), TFDamageTypes.HYDRA_BITE, this.hydra, TFEntities.HYDRA.get());
+
 					// bite it!
-					nearby.hurt(TFDamageTypes.getEntityDamageSource(living.level(), TFDamageTypes.HYDRA_BITE, this.hydra, TFEntities.HYDRA.get()), BITE_DAMAGE);
+					nearby.hurt(source, BITE_DAMAGE);
 
 					//knockback!
 					if (living instanceof Player player) {
 						PacketDistributor.sendToPlayer((ServerPlayer) player, new MovePlayerPacket(-this.headEntity.getDirection().getStepX() * 0.5F, 0.1F, -this.headEntity.getDirection().getStepZ() * 0.5F));
 					} else {
-						living.knockback(-this.headEntity.getDirection().getStepX(), 0.1F, -this.headEntity.getDirection().getStepZ());
+						living.knockback(-this.headEntity.getDirection().getStepX(), 0.1F, -this.headEntity.getDirection().getStepZ(), source, BITE_DAMAGE);
 					}
 				}
 			}
@@ -707,7 +712,7 @@ public class HydraHeadContainer {
 		if (this.headEntity.getState() == State.FLAMING) {
 			Entity target = getHeadLookTarget();
 
-			if (target != null && target != this.headEntity.getParent() && (!(target instanceof HydraPart) || ((HydraPart) target).getParent() != this.headEntity.getParent()) && this.hydra.level() instanceof ServerLevel serverLevel) {
+			if (target != null && target != this.headEntity.getParent() && (!(target instanceof HydraPart) || ((HydraPart) target).getParent() != this.headEntity.getParent()) && this.hydra.level() instanceof ServerLevel serverLevel && this.ticksProgress >= target.distanceTo(this.headEntity) / FLAME_PARTICLE_AVERAGE_SPEED) {
 				if (!target.fireImmune() && target.hurtServer(serverLevel, TFDamageTypes.getEntityDamageSource(target.level(), TFDamageTypes.HYDRA_FIRE, this.hydra, TFEntities.HYDRA.get()), FLAME_DAMAGE)) {
 					target.igniteForSeconds(FLAME_BURN_FACTOR);
 				}

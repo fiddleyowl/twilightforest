@@ -4,11 +4,23 @@ Twilight Forest [![Discord](https://img.shields.io/discord/313006291012288521.sv
 This is the home of the Twilight Forest mod for Minecraft 1.12 and beyond.
 
 ## Licensing
-Code unless otherwise stated default to our [LICENSE file here](LICENSE)
+Everything not stated below are **All Rights Reserved** by default.
 
-Non-Code, [Non-Sound](src/main/resources/assets/twilightforest/sounds) and [Non-Structure](src/main/resources/data/twilightforest/structure) assets [(Located here)](src/main/resources/assets) go by our [ASSET_LICENSE file here](ASSET_LICENSE)
+Java Code specifically under these listed directories follow this [LICENSE file here](LICENSE):
 
-Sound based assets [(Located Here)](src/main/resources/assets/twilightforest/sounds) and Structure based assets [(Located Here)](src/main/resources/data/twilightforest/structure) are **All Rights Reserved**
+- [src/main/java](src/main/java)
+- [src/asm/java](src/asm/java)
+- [src/data/java](src/data/java)
+- [src/test/java](src/test/java)
+
+## Supported Versions
+### Latest Minecraft Version
+New features and bugfixes will happen on this version.
+Right now this is **26.2.0**.
+### LTS
+Only bugfixes will happen on this version.
+LTS Minecraft Versions:
+- 26.1.2
 
 ## Downloads
 Releases will be available on [CurseForge](https://minecraft.curseforge.com/projects/the-twilight-forest) when ready.
@@ -50,13 +62,3 @@ dependencies {
     implementation fg.deobf("teamtwilight:twilightforest:{version}:universal")
 }
 ```
-
-## YourKit
-![](https://www.yourkit.com/images/yklogo.png)
-
-We appreciate YourKit, LLC for providing the project developers licenses of its profiler to help us improve performance!
-
-YourKit supports open source projects with its full-featured Java Profiler.
-YourKit, LLC is the creator of [YourKit Java Profiler](https://www.yourkit.com/java/profiler/)
-and [YourKit .NET Profiler](https://www.yourkit.com/.net/profiler/),
-innovative and intelligent tools for profiling Java and .NET applications.

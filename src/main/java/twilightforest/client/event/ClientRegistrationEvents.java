@@ -8,6 +8,7 @@ import net.minecraft.client.model.animal.pig.PigModel;
 import net.minecraft.client.model.animal.sheep.SheepFurModel;
 import net.minecraft.client.model.animal.wolf.AdultWolfModel;
 import net.minecraft.client.model.geom.LayerDefinitions;
+import net.minecraft.client.model.geom.PartNames;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.monster.silverfish.SilverfishModel;
@@ -20,7 +21,6 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.entity.*;
@@ -49,7 +49,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
@@ -62,7 +61,6 @@ import net.neoforged.neoforge.event.RegisterTooltipAppendersEvent;
 import tamaized.beanification.Component;
 import tamaized.beanification.PostConstruct;
 import twilightforest.TwilightForestMod;
-import twilightforest.asmhooks.RenderHooks;
 import twilightforest.block.AbstractTrophyBlock;
 import twilightforest.client.*;
 import twilightforest.client.model.TFModelLayers;
@@ -104,7 +102,6 @@ import twilightforest.item.travellers_gear.TravellersArmorBeltItem;
 import twilightforest.item.travellers_gear.TravellersArmorItem;
 import twilightforest.item.travellers_gear.TravellersGogglesItem;
 import twilightforest.potions.FrostedEffect;
-import twilightforest.util.woods.TFWoodTypes;
 
 import java.util.Objects;
 
@@ -115,7 +112,6 @@ public class ClientRegistrationEvents {
 	private void setup(IEventBus bus) {
 		bus.addListener(EntityRenderersEvent.AddLayers.class, this::attachRenderLayers);
 		bus.addListener(this::bakeCustomModels);
-		bus.addListener(this::clientSetup);
 		bus.addListener(this::registerStandalone);
 		bus.addListener(this::registerClientReloadListeners);
 		bus.addListener(this::registerAtlases);
@@ -211,19 +207,6 @@ public class ClientRegistrationEvents {
 				event.register(key, SimpleUnbakedStandaloneModel.simpleModelWrapper(lid.modelLocation()));
 			}
 		}
-	}
-
-	private void clientSetup(FMLClientSetupEvent evt) {
-		evt.enqueueWork(() -> {
-			Sheets.addWoodType(TFWoodTypes.TWILIGHT_OAK_WOOD_TYPE);
-			Sheets.addWoodType(TFWoodTypes.CANOPY_WOOD_TYPE);
-			Sheets.addWoodType(TFWoodTypes.MANGROVE_WOOD_TYPE);
-			Sheets.addWoodType(TFWoodTypes.DARK_WOOD_TYPE);
-			Sheets.addWoodType(TFWoodTypes.TIME_WOOD_TYPE);
-			Sheets.addWoodType(TFWoodTypes.TRANSFORMATION_WOOD_TYPE);
-			Sheets.addWoodType(TFWoodTypes.MINING_WOOD_TYPE);
-			Sheets.addWoodType(TFWoodTypes.SORTING_WOOD_TYPE);
-		});
 	}
 
 	private void registerAtlases(RegisterTextureAtlasesEvent event) {
@@ -688,7 +671,7 @@ public class ClientRegistrationEvents {
 
 		event.registerEntityModifier(new TypeToken<LivingEntityRenderer<LivingEntity, LivingEntityRenderState, ?>>() {}, (LivingEntity living, LivingEntityRenderState state) -> {
 			if (living.getItemBySlot(EquipmentSlot.HEAD).getItem() instanceof BlockItem head && head.getBlock() instanceof AbstractTrophyBlock)
-				state.setRenderData(RenderHooks.HIDE_HEAD_KEY, true);
+				state.overrideModelPartVisibility(PartNames.HEAD, false);
 
 			state.setRenderData(ShieldLayer.SHIELD_COUNT_KEY, ShieldLayer.getShieldCount(living));
 

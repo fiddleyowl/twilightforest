@@ -2,7 +2,6 @@
   "type": "minecraft:entity",
   "pools": [
     {
-      "bonus_rolls": 0.0,
       "conditions": [
         {
           "condition": "twilightforest:is_minion",
@@ -12,7 +11,7 @@
       "entries": [
         {
           "type": "minecraft:loot_table",
-          "value": "minecraft:entities/ghast"
+          "value": "twilightforest:entities/carminite_ghastguard"
         }
       ],
       "rolls": 1.0

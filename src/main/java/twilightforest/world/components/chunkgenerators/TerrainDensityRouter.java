@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.server.level.ColumnPos;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.levelgen.DensityFunction;
 import org.jetbrains.annotations.NotNull;
@@ -16,14 +17,16 @@ import twilightforest.world.components.layer.BiomeDensitySource;
  * A DensityFunction implementation that enables Biomes to influence terrain formulations, if in the noise chunk generator.
  */
 public class TerrainDensityRouter implements DensityFunction.SimpleFunction {
+
 	public static final MapCodec<TerrainDensityRouter> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
 		RegistryFileCodec.create(TFRegistries.Keys.BIOME_TERRAIN_DATA, BiomeDensitySource.CODEC, false).fieldOf("terrain_source").forGetter(TerrainDensityRouter::biomeDensitySourceHolder),
 		Codec.doubleRange(-64, 0).fieldOf("lower_density_bound").forGetter(TerrainDensityRouter::lowerDensityBound),
 		Codec.doubleRange(0, 64).fieldOf("upper_density_bound").forGetter(TerrainDensityRouter::upperDensityBound),
 		Codec.doubleRange(0, 32).orElse(8.0).fieldOf("depth_scalar").forGetter(TerrainDensityRouter::depthScalar),
-		DensityFunction.HOLDER_HELPER_CODEC.fieldOf("base_factor").forGetter(TerrainDensityRouter::baseFactor),
-		DensityFunction.HOLDER_HELPER_CODEC.fieldOf("base_offset").forGetter(TerrainDensityRouter::baseOffset)
+		DensityFunction.CODEC.fieldOf("base_factor").forGetter(TerrainDensityRouter::baseFactor),
+		DensityFunction.CODEC.fieldOf("base_offset").forGetter(TerrainDensityRouter::baseOffset)
 	).apply(inst, TerrainDensityRouter::new));
+
 	public static final KeyDispatchDataCodec<TerrainDensityRouter> KEY_CODEC = KeyDispatchDataCodec.of(CODEC);
 
 	private final Holder<BiomeDensitySource> biomeDensitySourceHolder;
@@ -109,21 +112,22 @@ public class TerrainDensityRouter implements DensityFunction.SimpleFunction {
 	 * Plan your biome density functions accordingly! Don't use anything that's vertically sensitive
 	 */
 	@Override // NoiseChunk is the only class to ever call this, and it's typically a new chunk each time
-	public DensityFunction mapAll(Visitor visitor) {
-		return visitor.apply(new ChunkCachedDensityRouter(
-			this.biomeDensitySourceHolder,
-			this.lowerDensityBound,
-			this.upperDensityBound,
-			this.depthScalar,
-			this.baseFactor,
-			this.baseOffset
-		));
+	public DensityFunction mapChildren(Visitor visitor) {
+		return new ChunkCachedDensityRouter(
+			biomeDensitySourceHolder,
+			lowerDensityBound,
+			upperDensityBound,
+			depthScalar,
+			visitor.apply(baseFactor),
+			visitor.apply(baseOffset)
+		);
 	}
 
 	public static class ChunkCachedDensityRouter extends TerrainDensityRouter {
 		private final BiomeDensitySource biomeDensitySource;
 
 		private final BiomeDensitySource.DensityData[] horizontalCache = new BiomeDensitySource.DensityData[16 * 16];
+		private final long[] horizontalCacheKeys = new long[16 * 16];
 
 		public ChunkCachedDensityRouter(Holder<BiomeDensitySource> biomeDensitySource, double lowerDensityBound, double upperDensityBound, double depthScalar, DensityFunction baseFactor, DensityFunction baseOffset) {
 			super(biomeDensitySource, lowerDensityBound, upperDensityBound, depthScalar, baseFactor, baseOffset);
@@ -137,12 +141,14 @@ public class TerrainDensityRouter implements DensityFunction.SimpleFunction {
 			int zInChunk = SectionPos.sectionRelative(context.blockZ());
 
 			int arrayCoord = zInChunk + (xInChunk << 4);
+			long columnKey = ColumnPos.asLong(context.blockX(), context.blockZ());
 
 			BiomeDensitySource.DensityData dataColumn = this.horizontalCache[arrayCoord];
 
-			if (dataColumn == null) {
+			if (dataColumn == null || horizontalCacheKeys[arrayCoord] != columnKey) {
 				dataColumn = this.biomeDensitySource.sampleTerrain(context.blockX(), context.blockZ(), context);
 				this.horizontalCache[arrayCoord] = dataColumn;
+				horizontalCacheKeys[arrayCoord] = columnKey;
 			}
 
 			return dataColumn;
