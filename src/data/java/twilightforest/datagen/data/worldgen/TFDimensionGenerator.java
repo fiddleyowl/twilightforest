@@ -68,6 +68,9 @@ public class TFDimensionGenerator {
                         .set(EnvironmentAttributes.CREAKING_ACTIVE, true)
                         .set(EnvironmentAttributes.EYEBLOSSOM_OPEN, TriState.TRUE)
                         .set(EnvironmentAttributes.STAR_BRIGHTNESS, 1.0F)
+                        // Preserve the celestial positions from the legacy fixed time of 13000 ticks.
+                        .set(EnvironmentAttributes.SUN_ANGLE, 93.47431F)
+                        .set(EnvironmentAttributes.MOON_ANGLE, 273.4743F)
                         .set(EnvironmentAttributes.SKY_LIGHT_LEVEL, 9.0F)
 						.set(EnvironmentAttributes.SKY_LIGHT_FACTOR, 0.35F)
                         .set(EnvironmentAttributes.SKY_LIGHT_COLOR, ARGB.colorFromFloat(1.0F, 0.65F, 0.65F, 1.0F))
