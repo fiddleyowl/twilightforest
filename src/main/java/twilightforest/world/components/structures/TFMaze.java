@@ -11,10 +11,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import twilightforest.TwilightForestMod;
 import twilightforest.init.TFBlocks;
-import twilightforest.init.TFConfiguredFeatures;
+import twilightforest.init.TFFeatures;
 
 import java.util.Arrays;
 import java.util.stream.IntStream;
@@ -40,8 +40,7 @@ public class TFMaze {
 
 	public int type; // 1-3 = various sizes hollow hills
 
-	@Nullable
-	public StructurePiece.BlockSelector wallBlocks;
+	public StructurePiece.@Nullable BlockSelector wallBlocks;
 
 	public BlockState wallBlockState;
 
@@ -371,7 +370,7 @@ public class TFMaze {
 
 		// only place it if we're actually generating the chunk the tree is in (or at least the middle of the tree)
 		if (sbb.isInside(pos)) {
-			if (!world.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(TFConfiguredFeatures.CANOPY_TREE).get().value().place(world, generator, world.getRandom(), pos)) {
+			if (!world.registryAccess().lookupOrThrow(Registries.FEATURE).get(TFFeatures.CANOPY_TREE).get().value().place(world, generator, world.getRandom(), pos)) {
 				makeWallThing(world, y, component, sbb, x, z, 0, 0);
 			}
 		}

@@ -14,16 +14,16 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructurePieceAccessor;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import twilightforest.init.TFBlocks;
-import twilightforest.init.TFConfiguredFeatures;
+import twilightforest.init.TFFeatures;
 import twilightforest.init.TFStructurePieceTypes;
 import twilightforest.init.custom.StructureSpeleothemConfigs;
 import twilightforest.loot.TFLootTables;
@@ -121,7 +121,7 @@ public class TrollCaveMainComponent extends TFStructureComponentOld {
 		// uberous!
 		for (int i = 0; i < 32; i++) {
 			BlockPos dest = getCoordsInCave(decoRNG);
-			generateAtSurface(world, generator, TFConfiguredFeatures.UBEROUS_SOIL_PATCH_BIG, decoRNG, dest.getX(), dest.getZ(), sbb);
+			generateAtSurface(world, generator, TFFeatures.UBEROUS_SOIL_PATCH_BIG, decoRNG, dest.getX(), dest.getZ(), sbb);
 		}
 	}
 
@@ -177,8 +177,7 @@ public class TrollCaveMainComponent extends TFStructureComponentOld {
 	/**
 	 * Gets a random position in the specified direction that connects to stairs currently in the tower.
 	 */
-	@Nullable
-	public BlockPos getValidOpening(RandomSource rand, Rotation direction) {
+	public @Nullable BlockPos getValidOpening(RandomSource rand, Rotation direction) {
 		// variables!
 		int offset = this.size / 4; // wall thickness
 		int wLength = size - (offset * 2); // wall length
@@ -231,7 +230,7 @@ public class TrollCaveMainComponent extends TFStructureComponentOld {
 	/**
 	 * Use the generator at the surface above specified coords
 	 */
-	protected void generateAtSurface(WorldGenLevel world, ChunkGenerator generator, ResourceKey<ConfiguredFeature<?, ?>> feature, RandomSource rand, int x, int z, BoundingBox sbb) {
+	protected void generateAtSurface(WorldGenLevel world, ChunkGenerator generator, ResourceKey<Feature> feature, RandomSource rand, int x, int z, BoundingBox sbb) {
 		// are the coordinates in our bounding box?
 		int dx = getWorldX(x, z);
 		int dz = getWorldZ(x, z);
@@ -241,7 +240,7 @@ public class TrollCaveMainComponent extends TFStructureComponentOld {
 		for (int i = 0; i < 15; i++) {
 			pos.move(0, 1, 0);
 			if (sbb.isInside(pos) && world.getBlockState(pos.above()).isAir()) {
-				world.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(feature).get().value().place(world, generator, rand, pos);
+				world.registryAccess().lookupOrThrow(Registries.FEATURE).get(feature).get().value().place(world, generator, rand, pos);
 				break;
 			}
 		}

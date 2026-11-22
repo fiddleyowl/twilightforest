@@ -7,6 +7,7 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
@@ -36,7 +37,7 @@ public class MinoshroomModel extends HumanoidModel<MinoshroomRenderState> implem
 		MeshDefinition meshdefinition = HumanoidModel.createMesh(CubeDeformation.NONE, 0);
 		PartDefinition partdefinition = meshdefinition.getRoot();
 
-		var head = partdefinition.addOrReplaceChild("head", CubeListBuilder.create()
+		PartDefinition head = partdefinition.addOrReplaceChild("head", CubeListBuilder.create()
 				.texOffs(96, 16)
 				.addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F),
 			PartPose.offset(0.0F, -6.0F, -9.0F));
@@ -48,7 +49,7 @@ public class MinoshroomModel extends HumanoidModel<MinoshroomRenderState> implem
 				.addBox(-2.0F, -1.0F, -1.0F, 4.0F, 3.0F, 1.0F),
 			PartPose.offset(0.0F, -2.0F, -4.0F));
 
-		var rightHorn = head.addOrReplaceChild("right_horn_1", CubeListBuilder.create().mirror()
+		PartDefinition rightHorn = head.addOrReplaceChild("right_horn_1", CubeListBuilder.create().mirror()
 				.texOffs(0, 0)
 				.addBox(-5.5F, -1.5F, -1.5F, 5.0F, 3.0F, 3.0F),
 			PartPose.offsetAndRotation(-2.5F, -6.5F, 0.0F, 0.0F, -25.0F * Mth.DEG_TO_RAD, 10.0F * Mth.DEG_TO_RAD));
@@ -58,7 +59,7 @@ public class MinoshroomModel extends HumanoidModel<MinoshroomRenderState> implem
 				.addBox(-3.5F, -1.0F, -1.0F, 3.0F, 2.0F, 2.0F),
 			PartPose.offsetAndRotation(-4.5F, 0.0F, 0.0F, 0.0F, -15.0F * Mth.DEG_TO_RAD, 45.0F * Mth.DEG_TO_RAD));
 
-		var leftHorn = head.addOrReplaceChild("left_horn_1", CubeListBuilder.create()
+		PartDefinition leftHorn = head.addOrReplaceChild("left_horn_1", CubeListBuilder.create()
 				.texOffs(0, 0)
 				.addBox(0.5F, -1.5F, -1.5F, 5.0F, 3.0F, 3.0F),
 			PartPose.offsetAndRotation(2.5F, -6.5F, 0.0F, 0.0F, 25.0F * Mth.DEG_TO_RAD, -10.0F * Mth.DEG_TO_RAD));
@@ -83,7 +84,7 @@ public class MinoshroomModel extends HumanoidModel<MinoshroomRenderState> implem
 				.addBox(-1.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F),
 			PartPose.offset(5.0F, -4.0F, -9.0F));
 
-		var body = partdefinition.addOrReplaceChild("cow_torso", CubeListBuilder.create()
+		PartDefinition body = partdefinition.addOrReplaceChild("cow_torso", CubeListBuilder.create()
 				.texOffs(18, 4)
 				.addBox(-6.0F, -10.0F, -7.0F, 12.0F, 18.0F, 10.0F),
 			PartPose.offsetAndRotation(0.0F, 5.0F, 2.0F, 1.570796F, 0.0F, 0.0F));
@@ -170,6 +171,9 @@ public class MinoshroomModel extends HumanoidModel<MinoshroomRenderState> implem
 	@Override
 	public void renderTrophy(PoseStack stack, SubmitNodeCollector collector, int light, int overlay, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress, ItemDisplayContext context) {
 		stack.translate(0.0F, 0.375F, 0.56F);
-		collector.submitModelPart(this.head, stack, RenderTypes.entityCutout(MinoshroomRenderer.TEXTURE), light, overlay, null, -1, breakProgress);
+		RenderType renderType = RenderTypes.entityCutout(MinoshroomRenderer.TEXTURE);
+		collector.submitModelPart(this.head, stack, renderType, light, overlay, null, -1);
+		if (breakProgress != null)
+			collector.submitCrumblingOverlay(this.head, stack, renderType, light, overlay, -1, breakProgress);
 	}
 }

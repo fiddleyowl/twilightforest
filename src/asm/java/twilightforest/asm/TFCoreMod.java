@@ -3,11 +3,10 @@ package twilightforest.asm;
 import net.neoforged.neoforgespi.transformation.ClassProcessorProvider;
 import twilightforest.asm.transformers.armor.ArmorVisibilityRenderingTransformer;
 import twilightforest.asm.transformers.beardifier.InjectCustomTerrainBeardifierDuringCreateNoiseChunkTransformer;
-import twilightforest.asm.transformers.block.SlimeBlockBounceUpTransformer;
 import twilightforest.asm.transformers.block.SlimeBlockMomentumTransformer;
 import twilightforest.asm.transformers.block.UnrestrainedFrictionTransformer;
 import twilightforest.asm.transformers.chunk.ChunkStatusTaskTransformer;
-import twilightforest.asm.transformers.cloud.IsRainingAtTransformer;
+import twilightforest.asm.transformers.cloud.PrecipitationAtTransformer;
 import twilightforest.asm.transformers.conquered.StructureStartLoadStaticTransformer;
 import twilightforest.asm.transformers.entity.PathFinderUnrestrainedByLeashTransformer;
 import twilightforest.asm.transformers.entity.ResetStuckUnrestrainedTransformer;
@@ -36,14 +35,13 @@ public class TFCoreMod implements ClassProcessorProvider {
 
 		//block
 		collector.add(new SlimeBlockMomentumTransformer());
-		collector.add(new SlimeBlockBounceUpTransformer());
 		collector.add(new UnrestrainedFrictionTransformer());
 
 		// chunk
 		collector.add(new ChunkStatusTaskTransformer());
 
 		// cloud
-		collector.add(new IsRainingAtTransformer());
+		collector.add(new PrecipitationAtTransformer());
 
 		// conquered
 		collector.add(new StructureStartLoadStaticTransformer());

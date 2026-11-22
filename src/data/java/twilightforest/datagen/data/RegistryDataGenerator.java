@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 public class RegistryDataGenerator extends DatapackBuiltinEntriesProvider {
 
 	public static final RegistrySetBuilder BUILDER = new RegistrySetBuilder()
-		.add(Registries.CONFIGURED_FEATURE, TFConfiguredFeatureGenerator::bootstrap)
+		.add(Registries.FEATURE, TFFeatureGenerator::bootstrap)
 		.add(Registries.PLACED_FEATURE, TFPlacedFeatureGenerator::bootstrap)
 		.add(TFRegistries.Keys.STRUCTURE_SPELEOTHEM_SETTINGS, StructureSpeleothemConfigGenerator::bootstrap)
 		.add(Registries.STRUCTURE, TFStructureGenerator::bootstrap)
@@ -43,7 +43,8 @@ public class RegistryDataGenerator extends DatapackBuiltinEntriesProvider {
 		.add(Registries.ENCHANTMENT, TFEnchantmentsGenerator::bootstrap)
 		.add(TFRegistries.Keys.TEMPLATE_MARKER_HANDLER_LIST, TemplateMarkerHandlerGenerator::bootstrap)
 		.add(Registries.TIMELINE, TFTimelineGenerator::bootstrap)
-		.add(Registries.WORLD_CLOCK, TFWorldClockGenerator::bootstrap);
+		.add(Registries.WORLD_CLOCK, TFWorldClockGenerator::bootstrap)
+		.add(Registries.CONTEXT_INT_PROVIDER, TFContextIntProviderGenerator::bootstrap);
 
 	public RegistryDataGenerator(PackOutput output, CompletableFuture<HolderLookup.Provider> provider) {
 		super(output, provider, BUILDER, Set.of("minecraft", TwilightForestMod.ID));

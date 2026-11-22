@@ -9,6 +9,7 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -38,7 +39,7 @@ public class UrGhastModel extends TFGhastModel<TFGhastRenderState> implements Tr
 		MeshDefinition meshdefinition = new MeshDefinition();
 		PartDefinition partdefinition = meshdefinition.getRoot();
 
-		var body = partdefinition.addOrReplaceChild("body", CubeListBuilder.create()
+		PartDefinition body = partdefinition.addOrReplaceChild("body", CubeListBuilder.create()
 				.texOffs(0, 0)
 				.addBox(-8.0F, -8.0F, -8.0F, 16.0F, 16.0F, 16.0F),
 			PartPose.offset(0.0F, 8.0F, 0.0F));
@@ -52,7 +53,7 @@ public class UrGhastModel extends TFGhastModel<TFGhastRenderState> implements Tr
 
 	protected static void makeTentacle(PartDefinition parent, String name, int iteration) {
 
-		var tentacleBase = parent.addOrReplaceChild(name, CubeListBuilder.create().texOffs(iteration % 3, 0)
+		PartDefinition tentacleBase = parent.addOrReplaceChild(name, CubeListBuilder.create().texOffs(iteration % 3, 0)
 				.addBox(-1.5F, 0.0F, -1.5F, 3.0F, 5.0F, 3.0F),
 			switch (iteration) {
 				case 0 -> PartPose.offset(4.5F, 7.0F, 4.5F);
@@ -72,12 +73,12 @@ public class UrGhastModel extends TFGhastModel<TFGhastRenderState> implements Tr
 
 
 
-		var tentacleExtension = tentacleBase.addOrReplaceChild(name + "_extension", CubeListBuilder.create()
+		PartDefinition tentacleExtension = tentacleBase.addOrReplaceChild(name + "_extension", CubeListBuilder.create()
 				.texOffs(iteration % 4, 0)
 				.addBox(-1.5F, 1.0F, -1.5F, 3.0F, 4.0F, 3.0F),
 			PartPose.offset(0.0F, 4.0F, 0.0F));
 
-		var tentacleExtension2 = tentacleExtension.addOrReplaceChild(name + "_extension_2", CubeListBuilder.create()
+		PartDefinition tentacleExtension2 = tentacleExtension.addOrReplaceChild(name + "_extension_2", CubeListBuilder.create()
 				.texOffs(iteration % 4, 4)
 				.addBox(-1.5F, 1.0F, -1.5F, 3.0F, 4.0F, 3.0F),
 			PartPose.offset(0.0F, 4.0F, 0.0F));
@@ -132,6 +133,9 @@ public class UrGhastModel extends TFGhastModel<TFGhastRenderState> implements Tr
 			stack.translate(0.0F, -1.0F, 0.0F);
 		}
 		stack.scale(0.5F, 0.5F, 0.5F);
-		collector.submitModelPart(this.body, stack, RenderTypes.entityCutout(UrGhastRenderer.TEXTURE), light, overlay, null, -1, breakProgress);
+		RenderType renderType = RenderTypes.entityCutout(UrGhastRenderer.TEXTURE);
+		collector.submitModelPart(this.body, stack, renderType, light, overlay, null, -1);
+		if (breakProgress != null)
+			collector.submitCrumblingOverlay(this.body, stack, renderType, light, overlay, -1, breakProgress);
 	}
 }

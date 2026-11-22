@@ -1,6 +1,5 @@
 package twilightforest.block;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
@@ -48,7 +47,6 @@ import twilightforest.init.TFBlockEntities;
 
 public class BrazierBlock extends BaseEntityBlock {
 
-	public static final MapCodec<BrazierBlock> CODEC = simpleCodec(BrazierBlock::new);
 	private static final VoxelShape UPPER_SHAPE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 12.0D, 14.0D);
 	private static final VoxelShape LOWER_SHAPE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 16.0D, 14.0D);
 	public static final EnumProperty<BrazierLight> LIGHT = EnumProperty.create("light", BrazierLight.class);
@@ -57,11 +55,6 @@ public class BrazierBlock extends BaseEntityBlock {
 	public BrazierBlock(Properties properties) {
 		super(properties);
 		this.registerDefaultState(this.getStateDefinition().any().setValue(LIGHT, BrazierLight.OFF).setValue(HALF, DoubleBlockHalf.LOWER));
-	}
-
-	@Override
-	protected MapCodec<? extends BaseEntityBlock> codec() {
-		return CODEC;
 	}
 
 	@Nullable
@@ -134,7 +127,7 @@ public class BrazierBlock extends BaseEntityBlock {
 	}
 
 	@Override
-	public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
 		level.setBlock(pos.above(), state.setValue(HALF, DoubleBlockHalf.UPPER), 3);
 	}
 
@@ -165,7 +158,7 @@ public class BrazierBlock extends BaseEntityBlock {
 				if (FluidUtil.getFirstStackContained(stack).is(Fluids.WATER)) {
 					ItemAccess access = ItemAccess.forPlayerInteraction(player, hand);
 					ResourceHandler<FluidResource> handler = access.oneByOne().getCapability(Capabilities.Fluid.ITEM);
-					try (var tx = Transaction.openRoot()) {
+					try (Transaction tx = Transaction.openRoot()) {
 						if (handler != null && handler.extract(handler.getResource(0), FluidType.BUCKET_VOLUME, tx) == FluidType.BUCKET_VOLUME) {
 							level.setBlock(pos, state.setValue(LIGHT, BrazierLight.OFF), 11);
 							level.setBlock(pos.below(), level.getBlockState(pos.below()).setValue(LIGHT, BrazierLight.OFF), 11);

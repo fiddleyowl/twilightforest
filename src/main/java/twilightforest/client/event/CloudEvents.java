@@ -1,20 +1,18 @@
 package twilightforest.client.event;
 
-
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.systems.GpuDevice;
-import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.rendertype.OutputTarget;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,12 +34,14 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import tamaized.beanification.Component;
-import tamaized.beanification.PostConstruct;
+import tamaized.beanification.connector.fml.EventBusPostConstruct;
+import tamaized.beanification.connector.fml.RequiresDist;
 import twilightforest.block.CloudBlock;
 import twilightforest.client.renderer.TFWeatherRenderer;
 import twilightforest.config.TFConfig;
@@ -54,11 +54,12 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 
 @Component
+@RequiresDist(Dist.CLIENT)
 public class CloudEvents {
 
 	private final List<PrecipitationRenderHelper> RENDER_HELPER = new ArrayList<>();
 
-	@PostConstruct(PostConstruct.Bus.GAME)
+	@EventBusPostConstruct(EventBusPostConstruct.Bus.GAME)
 	private void setup(IEventBus bus) {
 		bus.addListener(this::renderPrecipitation);
 		bus.addListener(this::tickWeatherEffects);
@@ -97,7 +98,8 @@ public class CloudEvents {
 								pos.set(roofX, roofY, roofZ);
 								if (Heightmap.Types.MOTION_BLOCKING.isOpaque().test(mc.level.getBlockState(pos)))
 									lastBadYLevel = roofY; // Check if we skip next loop
-								if (skipLoop) continue;
+								if (skipLoop)
+									continue;
 
 								if (mc.level.getBlockState(pos).getBlock() instanceof CloudBlock cloudBlock) {
 									Pair<Biome.Precipitation, Float> precipitationRainLevelPair = cloudBlock.getCurrentPrecipitation(pos, mc.level, mc.level.getRainLevel(1.0F));
@@ -108,9 +110,11 @@ public class CloudEvents {
 									for (int y = roofY - 1; y > roofY - precipitationDistance; y--) {
 										if (!Heightmap.Types.MOTION_BLOCKING.isOpaque().test(mc.level.getBlockState(pos.atY(y))))
 											highestRainyBlock = y;
-										else break;
+										else
+											break;
 									}
-									if (highestRainyBlock == roofY) continue;
+									if (highestRainyBlock == roofY)
+										continue;
 
 									RENDER_HELPER.add(new PrecipitationRenderHelper(pos.immutable(), precipitationRainLevelPair.getLeft(), precipitationRainLevelPair.getRight(), highestRainyBlock));
 								}
@@ -156,7 +160,8 @@ public class CloudEvents {
 
 									if (highestRainyPos.getY() > mc.level.getMinY() && highestRainyPos.getY() <= camPos.getY() + 10 && highestRainyPos.getY() >= camPos.getY() - 10) {
 										particlePos = highestRainyPos.below();
-										if (mc.options.particles().get() == ParticleStatus.MINIMAL) break;
+										if (mc.options.particles().get() == ParticleStatus.MINIMAL)
+											break;
 
 										double particleX = randomsource.nextDouble();
 										double particleZ = randomsource.nextDouble();
@@ -181,7 +186,8 @@ public class CloudEvents {
 	private void renderPrecipitation(RenderLevelStageEvent.AfterWeather event) {
 		if (TFConfig.getClientCloudBlockPrecipitationDistance() > 0 && !RENDER_HELPER.isEmpty()) {
 			Minecraft minecraft = Minecraft.getInstance();
-			if (minecraft.level == null) return;
+			if (minecraft.level == null)
+				return;
 			float partialTick = minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
 			int ticks = (int) (minecraft.level.getGameTime() & 131071L);
 
@@ -208,7 +214,8 @@ public class CloudEvents {
 
 				int botY = Math.max(helper.rainOnY(), floorY - renderDistance);
 				int topY = Math.min(pos.getY(), floorY + renderDistance);
-				if (topY - botY <= 0) continue;
+				if (topY - botY <= 0)
+					continue;
 
 				double xDiff = (double) roofX + 0.5D - camX;
 				double zDiff = (double) roofZ + 0.5D - camZ;

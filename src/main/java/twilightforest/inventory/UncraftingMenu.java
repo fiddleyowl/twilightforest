@@ -16,6 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
@@ -23,8 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.Tags;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import twilightforest.TwilightForestMod;
 import twilightforest.config.TFConfig;
 import twilightforest.tags.TFItemTags;
@@ -63,8 +63,7 @@ public class UncraftingMenu extends AbstractCraftingMenu {
 
 	// Store the currently selected recipe for use later down the line.
 	// Currently used for determining if the recipe is an uncrafting one and for determining custom costs
-	@Nullable
-	public Recipe<?> storedGhostRecipe = null;
+	public @Nullable Recipe<?> storedGhostRecipe = null;
 
 	public static UncraftingMenu fromNetwork(int id, Inventory inventory) {
 		return new UncraftingMenu(id, inventory, inventory.player.level(), ContainerLevelAccess.NULL);
@@ -155,16 +154,17 @@ public class UncraftingMenu extends AbstractCraftingMenu {
 						for (int invX = 0; invX < recipeWidth; invX++) {
 
 							int index = invX + invY * recipeWidth;
-							if (index >= recipeItems.length) continue;
+							if (index >= recipeItems.length)
+								continue;
 
-							ItemStack ingredient = normalizeIngredient(recipeItems[index].copy());
+							ItemStack ingredient = normalizeIngredient(recipeItems[index]);
 							this.uncraftingMatrix.setItem(invX + invY * 3, ingredient);
 						}
 					}
 				} else {
 					for (int i = 0; i < this.uncraftingMatrix.getContainerSize(); i++) {
 						if (i < recipeItems.length) {
-							ItemStack ingredient = normalizeIngredient(recipeItems[i].copy());
+							ItemStack ingredient = normalizeIngredient(recipeItems[i]);
 							this.uncraftingMatrix.setItem(i, ingredient);
 						}
 					}
@@ -300,7 +300,8 @@ public class UncraftingMenu extends AbstractCraftingMenu {
 							recipes.add(recipe);
 						}
 					}
-					if (recipe instanceof UncraftingRecipe uncraftingRecipe && uncraftingRecipe.isItemStackAnIngredient(inputStack)) recipes.add(uncraftingRecipe);
+					if (recipe instanceof UncraftingRecipe uncraftingRecipe && uncraftingRecipe.isItemStackAnIngredient(inputStack))
+						recipes.add(uncraftingRecipe);
 				}
 			}
 		}
@@ -319,7 +320,7 @@ public class UncraftingMenu extends AbstractCraftingMenu {
 				matches(inputStack, shapelessRecipe.result);
 		}
 
-		return TFConfig.allowShapelessUncrafting ? recipe instanceof CraftingRecipe : recipe instanceof ShapedRecipe;
+		return false;
 	}
 
 	protected static boolean isComplete(List<Ingredient> list) { //TODO: check if properly ported
@@ -517,7 +518,6 @@ public class UncraftingMenu extends AbstractCraftingMenu {
 		}
 	}
 
-	@NotNull
 	private Container getSlotContainer(int slotNum) {
 		return this.slots.get(slotNum).container;
 	}
@@ -570,7 +570,7 @@ public class UncraftingMenu extends AbstractCraftingMenu {
 				}
 				slot.onQuickCraft(itemstack1, itemstack);
 			} else if (slotNum == 1) {
-				this.positionData.execute((p_39378_, p_39379_) -> itemstack1.getItem().onCraftedBy(itemstack1, player));
+				this.positionData.execute((_, _) -> itemstack1.getItem().onCraftedBy(itemstack1, player));
 				if (!this.moveItemStackTo(itemstack1, 20, 56, true)) {
 					return ItemStack.EMPTY;
 				}
@@ -608,7 +608,7 @@ public class UncraftingMenu extends AbstractCraftingMenu {
 	@Override
 	public void removed(Player player) {
 		super.removed(player);
-		this.positionData.execute((world, pos) -> {
+		this.positionData.execute((_, _) -> {
 			this.clearContainer(player, this.craftSlots);
 			this.clearContainer(player, this.tinkerInput);
 		});
@@ -628,8 +628,17 @@ public class UncraftingMenu extends AbstractCraftingMenu {
 				continue;
 			}
 
-			ItemStack[] matchingStacks = ingredients.get(index).getValues().stream().filter(s -> !s.is(TFItemTags.BANNED_UNCRAFTING_INGREDIENTS)).map(p -> new ItemStack(p.value())).toArray(ItemStack[]::new);
-			stacks[i] = matchingStacks.length > 0 ? matchingStacks[Math.floorMod(this.ingredientsInCycle, matchingStacks.length)] : ItemStack.EMPTY;
+			Ingredient ingredient = ingredients.get(index);
+			List<ItemStack> matchingStacks = new ArrayList<>();
+			for (ItemStack stack : ingredient.display().resolveForStacks(SlotDisplayContext.fromLevel(level))) {
+				if (!stack.isEmpty() && ingredient.test(stack) && !stack.is(TFItemTags.BANNED_UNCRAFTING_INGREDIENTS)) {
+					matchingStacks.add(stack);
+				}
+			}
+
+			stacks[i] = matchingStacks.isEmpty()
+				? ItemStack.EMPTY
+				: matchingStacks.get(Math.floorMod(ingredientsInCycle, matchingStacks.size())).copy();
 		}
 
 		return stacks;

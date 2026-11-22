@@ -2,7 +2,7 @@ package twilightforest.config;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
-import com.mojang.authlib.yggdrasil.ProfileResult;
+import com.mojang.authlib.services.ProfileResult;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
@@ -14,7 +14,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.neoforged.neoforge.common.TranslatableEnum;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import twilightforest.TwilightForestMod;
 import twilightforest.util.PlayerHelper;
 
@@ -27,8 +28,7 @@ import java.util.*;
 public class TFConfig {
 
 	public static final String CONFIG_ID = "config." + TwilightForestMod.ID + ".";
-	@Nullable
-	private static Identifier portalLockingAdvancement;
+	private static @Nullable Identifier portalLockingAdvancement;
 	private static final List<Holder<Biome>> VALID_AURORA_BIOMES = new ArrayList<>();
 	public static final List<GameProfile> GAME_PROFILES = new ArrayList<>();
 
@@ -108,15 +108,15 @@ public class TFConfig {
 	@Nullable
 	public static Identifier getPortalLockingAdvancement(Player player) {
 		//only run assigning logic if the config has an advancement set and the RL is null
-		if (portalLockingAdvancement == null && !ConfigSetup.COMMON_CONFIG.PORTAL.portalAdvancementLock.get().isEmpty()) {
+		if (portalLockingAdvancement == null && !ConfigSetup.LOCAL_CONFIG.PORTAL.portalAdvancementLock.get().isEmpty()) {
 
-			Identifier lock = Identifier.tryParse(ConfigSetup.COMMON_CONFIG.PORTAL.portalAdvancementLock.get());
+			Identifier lock = Identifier.tryParse(ConfigSetup.LOCAL_CONFIG.PORTAL.portalAdvancementLock.get());
 			if (lock == null || PlayerHelper.getAdvancement(player, lock) == null) {
 				//if the RL is not a valid advancement fail us
 				TwilightForestMod.LOGGER.error("The portal locking advancement is not a valid advancement! Setting to null!");
-				ConfigSetup.COMMON_CONFIG.PORTAL.portalAdvancementLock.set("");
+				ConfigSetup.LOCAL_CONFIG.PORTAL.portalAdvancementLock.set("");
 			} else {
-				portalLockingAdvancement = Identifier.tryParse(ConfigSetup.COMMON_CONFIG.PORTAL.portalAdvancementLock.get());
+				portalLockingAdvancement = Identifier.tryParse(ConfigSetup.LOCAL_CONFIG.PORTAL.portalAdvancementLock.get());
 				TwilightForestMod.LOGGER.debug("Portal locking advancement reloaded. Current advancement to check for is: {}", portalLockingAdvancement);
 			}
 		}
@@ -139,7 +139,7 @@ public class TFConfig {
 		return VALID_AURORA_BIOMES;
 	}
 
-	protected static void rebakeCommonOptions(TFCommonConfig config) {
+	protected static void rebakeLocalOptions(TFLocalConfig config) {
 		casketUUIDLocking = config.casketUUIDLocking.get();
 		disableSkullCandles = config.disableSkullCandles.get();
 		defaultItemEnchants = config.defaultItemEnchants.get();
@@ -179,7 +179,7 @@ public class TFConfig {
 		portalLockingAdvancement = null;
 	}
 
-	protected static void rebakeServerOptions(TFServerConfig config) {
+	protected static void rebakeSyncedOptions(TFSyncedConfig config) {
 		//Uncrafting Table
 		uncraftingXpCostMultiplier = config.UNCRAFTING_STUFFS.uncraftingXpCostMultiplier.get();
 		repairingXpCostMultiplier = config.UNCRAFTING_STUFFS.repairingXpCostMultiplier.get();
@@ -263,7 +263,7 @@ public class TFConfig {
 		}
 
 		@Override
-		public Component getTranslatedName() {
+		public @NonNull Component getTranslatedName() {
 			return Component.translatable(CONFIG_ID + "multiplayer_fight_adjuster." + this.name().toLowerCase(Locale.ROOT));
 		}
 	}

@@ -7,6 +7,7 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -64,7 +65,7 @@ public class KnightPhantomModel extends HumanoidModel<KnightPhantomRenderState> 
 		PartDefinition partdefinition = meshdefinition.getRoot();
 		CubeDeformation deformation = new CubeDeformation(0.25F);
 
-		var head = partdefinition.addOrReplaceChild("head",
+		PartDefinition head = partdefinition.addOrReplaceChild("head",
 			CubeListBuilder.create()
 				.texOffs(0, 0)
 				.addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F),
@@ -72,13 +73,13 @@ public class KnightPhantomModel extends HumanoidModel<KnightPhantomRenderState> 
 
 		head.addOrReplaceChild("hat", CubeListBuilder.create(), PartPose.ZERO);
 
-		var helm = partdefinition.addOrReplaceChild("helmet",
+		PartDefinition helm = partdefinition.addOrReplaceChild("helmet",
 			CubeListBuilder.create()
 				.texOffs(0, 0)
 				.addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, deformation),
 			PartPose.offset(0.0F, -4.0F, 0.0F));
 
-		var rightHorn = helm.addOrReplaceChild("right_horn_1",
+		PartDefinition rightHorn = helm.addOrReplaceChild("right_horn_1",
 			CubeListBuilder.create()
 				.texOffs(24, 0)
 				.addBox(-5.5F, -1.5F, -1.5F, 5.0F, 3.0F, 3.0F, deformation),
@@ -90,7 +91,7 @@ public class KnightPhantomModel extends HumanoidModel<KnightPhantomRenderState> 
 				.addBox(-3.5F, -1.0F, -1.0F, 3.0F, 2.0F, 2.0F, deformation),
 			PartPose.offsetAndRotation(-4.5F, 0.0F, 0.0F, 0.0F, -15.0F * Mth.DEG_TO_RAD, 45.0F * Mth.DEG_TO_RAD));
 
-		var leftHorn = helm.addOrReplaceChild("left_horn_1",
+		PartDefinition leftHorn = helm.addOrReplaceChild("left_horn_1",
 			CubeListBuilder.create().mirror()
 				.texOffs(24, 0)
 				.addBox(0.5F, -1.5F, -1.5F, 5.0F, 3.0F, 3.0F, deformation),
@@ -146,11 +147,17 @@ public class KnightPhantomModel extends HumanoidModel<KnightPhantomRenderState> 
 
 			stack.scale(1 / 1.1F, 1 / 1.1F, 1 / 1.1F);
 			stack.translate(0.0F, 0.25F, 0.0F);
-			collector.submitModelPart(this.head, stack, RenderTypes.entityCutout(KnightPhantomRenderer.TEXTURE), light, overlay, null, -1, breakProgress);
+			RenderType renderType = RenderTypes.entityCutout(KnightPhantomRenderer.TEXTURE);
+			collector.submitModelPart(this.head, stack, renderType, light, overlay, null, -1);
+			if (breakProgress != null)
+				collector.submitCrumblingOverlay(this.head, stack, renderType, light, overlay, -1, breakProgress);
 			stack.popPose();
 		} else {
 			stack.translate(0.0F, 0.25F, 0.0F);
-			collector.submitModelPart(this.head, stack, RenderTypes.entityCutout(KnightPhantomRenderer.TEXTURE), light, overlay, null, -1, breakProgress);
+			RenderType renderType = RenderTypes.entityCutout(KnightPhantomRenderer.TEXTURE);
+			collector.submitModelPart(this.head, stack, renderType, light, overlay, null, -1);
+			if (breakProgress != null)
+				collector.submitCrumblingOverlay(this.head, stack, renderType, light, overlay, -1, breakProgress);
 			stack.scale(1.1F, 1.1F, 1.1F);
 			stack.translate(0.0F, 0.05F, 0.0F);
 			collector.submitModelPart(this.helmet, stack, RenderTypes.entityCutout(PHANTOM_ARMOR_TEXTURE), light, overlay, null);

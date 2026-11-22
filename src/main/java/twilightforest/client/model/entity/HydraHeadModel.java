@@ -7,6 +7,7 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -29,7 +30,7 @@ public class HydraHeadModel extends EntityModel<HydraHeadRenderState> implements
 		MeshDefinition meshdefinition = new MeshDefinition();
 		PartDefinition partdefinition = meshdefinition.getRoot();
 
-		var head = partdefinition.addOrReplaceChild("head", CubeListBuilder.create()
+		PartDefinition head = partdefinition.addOrReplaceChild("head", CubeListBuilder.create()
 				.texOffs(272, 0)
 				.addBox(-16.0F, -14.0F, -16.0F, 32.0F, 24.0F, 32.0F, new CubeDeformation(0.01F))
 				.texOffs(272, 56)
@@ -101,6 +102,9 @@ public class HydraHeadModel extends EntityModel<HydraHeadRenderState> implements
 			stack.translate(0.0F, 0.0F, 0.75f);
 		}
 		stack.translate(0.0F, -1.0F, itemForm ? -1.0F : 0.0F);
-		collector.submitModelPart(this.head, stack, RenderTypes.entityCutout(HydraRenderer.TEXTURE), light, overlay, null, -1, breakProgress);
+		RenderType renderType = RenderTypes.entityCutout(HydraRenderer.TEXTURE);
+		collector.submitModelPart(this.head, stack, renderType, light, overlay, null, -1);
+		if (breakProgress != null)
+			collector.submitCrumblingOverlay(this.head, stack, renderType, light, overlay, -1, breakProgress);
 	}
 }

@@ -7,6 +7,7 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -34,7 +35,7 @@ public class AlphaYetiModel extends HumanoidModel<AlphaYetiRenderState> implemen
 				.addBox(-4.0F, -8.0F, -4.0F, 0.0F, 0.0F, 0.0F),
 			PartPose.ZERO);
 
-		var body = partdefinition.addOrReplaceChild("body", CubeListBuilder.create()
+		PartDefinition body = partdefinition.addOrReplaceChild("body", CubeListBuilder.create()
 				.texOffs(80, 0)
 				.addBox(-24.0F, -60.0F, -18.0F, 48.0F, 72.0F, 36.0F),
 			PartPose.offset(0.0F, -6.0F, 0.0F));
@@ -85,7 +86,7 @@ public class AlphaYetiModel extends HumanoidModel<AlphaYetiRenderState> implemen
 		MeshDefinition meshdefinition = HumanoidModel.createMesh(CubeDeformation.NONE, 0.0F);
 		PartDefinition partdefinition = meshdefinition.getRoot();
 
-		var head = partdefinition.addOrReplaceChild("head", CubeListBuilder.create()
+		PartDefinition head = partdefinition.addOrReplaceChild("head", CubeListBuilder.create()
 				.texOffs(80, 0)
 				.addBox(-24.0F, -24.0F, -18.0F, 48.0F, 54.0F, 36.0F)
 				.texOffs(64, 0)
@@ -108,7 +109,7 @@ public class AlphaYetiModel extends HumanoidModel<AlphaYetiRenderState> implemen
 	 */
 	private static void addPairHorns(PartDefinition partdefinition, float height, float zangle, int set) {
 
-		var leftHorn = partdefinition.addOrReplaceChild("left_horn_" + set,
+		PartDefinition leftHorn = partdefinition.addOrReplaceChild("left_horn_" + set,
 			CubeListBuilder.create()
 				.texOffs(0, 108)
 				.addBox(-9.0F, -5.0F, -5.0F, 10.0F, 10.0F, 10.0F),
@@ -122,7 +123,7 @@ public class AlphaYetiModel extends HumanoidModel<AlphaYetiRenderState> implemen
 			PartPose.offsetAndRotation(-8.0F, 0.0F, 0.0F,
 				0.0F, -20F * Mth.DEG_TO_RAD, zangle * Mth.DEG_TO_RAD));
 
-		var rightHorn = partdefinition.addOrReplaceChild("right_horn_" + set,
+		PartDefinition rightHorn = partdefinition.addOrReplaceChild("right_horn_" + set,
 			CubeListBuilder.create()
 				.texOffs(0, 108)
 				.addBox(-1.0F, -5.0F, -5.0F, 10.0F, 10.0F, 10.0F),
@@ -219,6 +220,9 @@ public class AlphaYetiModel extends HumanoidModel<AlphaYetiRenderState> implemen
 	public void renderTrophy(PoseStack stack, SubmitNodeCollector collector, int light, int overlay, ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress, ItemDisplayContext context) {
 		stack.scale(0.2F, 0.2F, 0.2F);
 		stack.translate(0.0F, -1.5F, 0.0F);
-		collector.submitModelPart(this.head, stack, RenderTypes.entityCutout(AlphaYetiRenderer.TEXTURE), light, overlay, null, -1, breakProgress);
+		RenderType renderType = RenderTypes.entityCutout(AlphaYetiRenderer.TEXTURE);
+		collector.submitModelPart(this.head, stack, renderType, light, overlay, null, -1);
+		if (breakProgress != null)
+			collector.submitCrumblingOverlay(this.head, stack, renderType, light, overlay, -1, breakProgress);
 	}
 }
